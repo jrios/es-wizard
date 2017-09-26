@@ -1,0 +1,29 @@
+{
+  "name": "es-wizard",
+  "version": "1.0.0",
+  "description": "Wizard component that walks users through a step-based workflow",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "babel src -d lib --ignore *.spec.js"
+  },
+  "author": "Jake Rios",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-react": "^6.24.1",
+    "enzyme": "^2.9.1",
+    "jest": "^21.1.0",
+    "react-dom": "^15.6.1",
+    "react-test-renderer": "^15.6.1"
+  },
+  "dependencies": {
+    "es-components": "^4.2.0",
+    "lodash.noop": "^3.0.1",
+    "react": "^15.6.1",
+    "react-progression": "^1.1.0",
+    "styled-components": "^2.1.2"
+  }
+}
