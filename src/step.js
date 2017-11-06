@@ -6,13 +6,13 @@ import noop from 'lodash.noop';
 import { Button } from 'es-components';
 
 const StepWrapper = styled.section`
-  display: ${props => props.display ? 'block' : 'none'};
   margin-bottom: 60px;
+  visibility: ${props => (props.shouldDisplay ? 'visible' : 'hidden')};
 `;
 
 const Overlay = styled.div`
   background-color: #000;
-  display: ${props => props.display ? 'block' : 'none'};
+  display: ${props => (props.shouldDisplay ? 'block' : 'none')};
   opacity: 0.1;
   position: absolute;
   z-index: 2;
@@ -29,47 +29,37 @@ const ButtonWrapper = styled.div`
   margin-right: 20px;
 `;
 
-const WizardButton = styled(Button)`
-  margin-left: 20px;
-`;
+const WizardButton = styled(Button)`margin-left: 20px;`;
 
-function StepButtons({ buttonConfigurations }) {
-  return (
-    <ButtonWrapper>
-      {buttonConfigurations.map(config => {
-         const props = {
-           handleOnClick: config.onClick,
-           styleType: config.styleType || 'default',
-           id: config.id
-         };
-         return <WizardButton key={config.id} {...props}>{config.text}</WizardButton>;
-      })}
-    </ButtonWrapper>
-  );
-}
-
-export default class Step extends Component {
+export class Step extends Component {
   static propTypes = {
     id: PropTypes.string.isRequired,
-    active: PropTypes.bool,
-    complete: PropTypes.bool,
+    model: PropTypes.object,
+    modelSelector: PropTypes.func,
+    isPersistent: PropTypes.bool,
+    isActive: PropTypes.bool,
+    isComplete: PropTypes.bool,
     completeStep: PropTypes.func,
+    updateModel: PropTypes.func,
+    persist: PropTypes.func,
     render: PropTypes.func
-  }
+  };
 
   static defaultProps = {
-    persistent: true,
-    active: false,
-    complete: false,
+    isPersistent: true,
+    isActive: false,
+    isComplete: false,
     completeStep: noop,
+    model: {},
     modelSelector: noop,
+    updateModel: noop,
+    persist: noop,
     render: noop
-  }
+  };
 
   state = {
-    editing: false,
-    complete: this.props.complete
-  }
+    isEditing: false
+  };
 
   componentDidMount() {
     window.addEventListener('resize', this.setCalculatedOverlay);
@@ -82,11 +72,11 @@ export default class Step extends Component {
 
   setStepContentElement = ref => {
     this.stepContent = ref;
-  }
+  };
 
   setOverlayElement = ref => {
     this.stepOverlay = ref;
-  }
+  };
 
   setCalculatedOverlay = () => {
     const stepContentElement = this.stepContent;
@@ -96,81 +86,90 @@ export default class Step extends Component {
 
     overlay.style.height = style.getPropertyValue('height');
     overlay.style.width = style.getPropertyValue('width');
-  }
+  };
 
   getNextButtonProps = () => {
     return {
-      id: `${this.props.id}-next-button`,
+      ['data-test']: `next-button`,
       styleType: 'primary',
       text: 'Next',
-      onClick: this.completeStep
+      onClick: this.props.completeStep
     };
-  }
+  };
+
+  saveEditedStep = () => {
+    this.setState(() => ({ isEditing: false }));
+    this.props.completeStep();
+  };
 
   getSaveAndNextButtonProps = () => {
+    function save() {
+      this.props.persist(this.props.model)
+        .then(() => {
+          this.state.isEditing ? this.saveEditedStep() : this.props.completeStep();
+        }).catch(reason => {
+          this.setState({ hasError: true, errorMessage: reason });
+        });
+    };
+
     return {
-      id: `${this.props.id}-save-and-next-button`,
+      ['data-test']: `save-and-next-button`,
       styleType: 'primary',
       text: 'Save & Next',
-      onClick: this.completeStep
+      onClick: save.bind(this)
     };
-  }
-
-  completeStep = () => {
-    this.setState(() => ({ complete: true, editing: false }));
-    this.props.completeStep();
-  }
+  };
 
   getEditButtonProps = () => {
     return {
-      id: `${this.props.id}-edit-button`,
+      ['data-test']: `edit-button`,
       text: 'Edit',
       onClick: this.toggleEditState
-    }
-  }
+    };
+  };
 
   getCancelButtonProps = () => {
     return {
-      id: `${this.props.id}-cancel-button`,
+      ['data-test']: `cancel-button`,
       text: 'Cancel',
       onClick: this.toggleEditState
-    }
-  }
+    };
+  };
 
   toggleEditState = () => {
-    this.setState(({ editing }) => ({ editing: !editing }))
-  }
+    this.setState(({ isEditing }) => ({ isEditing: !isEditing }));
+  };
 
   getButtonConfigurations = () => {
-    const { persistent, complete } = this.props;
-    const { editing } = this.state;
+    const { isPersistent, isComplete } = this.props;
+    const { isEditing } = this.state;
     let buttonProps = [];
-    if (persistent) {
-      if (!complete || complete && editing) {
+    if (isPersistent) {
+      if (!isComplete || (isComplete && isEditing)) {
         buttonProps = [...buttonProps, this.getSaveAndNextButtonProps()];
       }
-      if (complete && !editing) {
+      if (isComplete && !isEditing) {
         buttonProps = [...buttonProps, this.getEditButtonProps()];
       }
-      if (complete && editing) {
+      if (isComplete && isEditing) {
         buttonProps = [...buttonProps, this.getCancelButtonProps()];
       }
     } else {
-      buttonProps = complete ? buttonProps : [this.getNextButtonProps()];
+      buttonProps = isComplete ? buttonProps : [this.getNextButtonProps()];
     }
 
     return buttonProps;
-  }
+  };
 
   updateModel = updater => {
     this.props.updateModel(updater(this.props.model));
-  }
+  };
 
   render() {
-    const { id, active, complete, render } = this.props;
-    const { editing } = this.state;
-    const displayStep = active || complete;
-    const displayOverlay = complete && !editing;
+    const { id, isActive, isComplete, render } = this.props;
+    const { isEditing } = this.state;
+    const displayStep = isActive || isComplete;
+    const displayOverlay = isComplete && !isEditing;
 
     const childProps = {
       stepId: id,
@@ -180,12 +179,33 @@ export default class Step extends Component {
     };
 
     return (
-      <StepWrapper className="wizard-step" id={id} display={displayStep}>
-        <Overlay innerRef={this.setOverlayElement} id={`${id}-overlay`} display={displayOverlay} />
-        <StepContent innerRef={this.setStepContentElement} id={`${id}-content`}>
+      <StepWrapper
+        className="wizard-step"
+        data-test={id}
+        shouldDisplay={displayStep}
+      >
+        <Overlay
+          innerRef={this.setOverlayElement}
+          data-test="overlay"
+          shouldDisplay={displayOverlay}
+        />
+        <StepContent innerRef={this.setStepContentElement} data-test="content">
           {render(childProps)}
         </StepContent>
-        {<StepButtons buttonConfigurations={this.getButtonConfigurations()} />}
+        <ButtonWrapper>
+          {this.getButtonConfigurations().map(config => {
+            const buttonProps = {
+              handleOnClick: config.onClick,
+              styleType: config.styleType || 'default',
+              ['data-test']: config['data-test']
+            };
+            return (
+              <WizardButton key={config['data-test']} {...buttonProps}>
+                {config.text}
+              </WizardButton>
+            );
+          })}
+        </ButtonWrapper>
       </StepWrapper>
     );
   }

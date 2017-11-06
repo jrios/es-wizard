@@ -1,11 +1,14 @@
 {
   "name": "es-wizard",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Wizard component that walks users through a step-based workflow",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "jest",
-    "build": "babel src -d lib --ignore *.spec.js"
+    "test": "es-scripts test",
+    "test:cover": "es-scripts test --cover",
+    "test:report": "es-scripts test --report",
+    "validate": "es-scripts format && es-scripts lint",
+    "build": "babel src -d dist --ignore *.spec.js"
   },
   "author": "Jake Rios",
   "license": "MIT",
@@ -14,16 +17,24 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-preset-env": "^1.6.0",
     "babel-preset-react": "^6.24.1",
-    "enzyme": "^2.9.1",
+    "enzyme": "^3.1.0",
+    "enzyme-adapter-react-16": "^1.0.1",
+    "enzyme-to-json": "^3.1.0",
+    "es-scripts": "^0.1.1",
     "jest": "^21.1.0",
-    "react-dom": "^15.6.1",
-    "react-test-renderer": "^15.6.1"
+    "jest-styled-components": "^4.7.0",
+    "react-dom": "^16.0.0",
+    "react-test-renderer": "^16.0.0"
+  },
+  "jest": {
+    "setupTestFrameworkScriptFile": "./src/test-setup.js"
   },
   "dependencies": {
     "es-components": "^4.2.0",
+    "jest-teamcity-reporter": "^0.7.0",
     "lodash.noop": "^3.0.1",
-    "react": "^15.6.1",
-    "react-progression": "^1.1.0",
+    "react": "^16.0.0",
+    "react-advancer": "^1.0.0",
     "styled-components": "^2.1.2"
   }
 }

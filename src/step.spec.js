@@ -1,121 +1,121 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { Button } from 'es-components';
+import toJson from 'enzyme-to-json';
 
-import Step from './step';
+import { Step } from './step';
 
-test('can render a child with the id passed to it', () => {
+test('passes id to render prop', () => {
   const wrapper = setup();
-
-  expect(wrapper.find('#test-child')).toHaveLength(1)
+  expect(wrapper.find('#test-child')).toHaveLength(1);
 });
 
 describe('button configurations', () => {
-  test('displays only next button when not complete and not persistent', () => {
-    const wrapper = setup({ persistent: false });
+  test('displays only next button when not isComplete and not isPersistent', () => {
+    const wrapper = setup({ isPersistent: false });
 
     const buttons = wrapper.find(Button);
 
     expect(buttons).toHaveLength(1);
-    expect(buttons.at(0).prop('id')).toBe('test-next-button');
+    expect(buttons.at(0).prop('data-test')).toBe('next-button');
   });
 
-  test('displays no buttons when complete and not persistent', () => {
-    const wrapper = setup({ complete: true, persistent: false });
+  test('displays no buttons when isComplete and not isPersistent', () => {
+    const wrapper = setup({ isComplete: true, isPersistent: false });
 
     const buttons = wrapper.find(Button);
 
     expect(buttons).toHaveLength(0);
   });
 
-  test('displays only Save and Next button when not complete and persistent', () => {
+  test('displays only Save and Next button when not isComplete and isPersistent', () => {
     const wrapper = setup();
 
     const buttons = wrapper.find(Button);
 
     expect(buttons).toHaveLength(1);
-    expect(buttons.at(0).prop('id')).toBe('test-save-and-next-button');
+    expect(buttons.at(0).prop('data-test')).toBe('save-and-next-button');
   });
 
-  test('displays Save and Next and Cancel buttons when complete and persistent and editing', () => {
-    const wrapper = setup({ complete: true });
-    wrapper.setState({ editing: true });
+  test('displays Save and Next and Cancel buttons when isComplete and isPersistent and isEditing', () => {
+    const wrapper = setup({ isComplete: true });
+    wrapper.setState({ isEditing: true });
 
     const buttons = wrapper.find(Button);
 
     expect(buttons).toHaveLength(2);
-    expect(buttons.at(0).prop('id')).toBe('test-save-and-next-button');
-    expect(buttons.at(1).prop('id')).toBe('test-cancel-button');
+    expect(buttons.at(0).prop('data-test')).toBe('save-and-next-button');
+    expect(buttons.at(1).prop('data-test')).toBe('cancel-button');
   });
 
-  test('displays only Edit button when complete and persistent and not editing', () => {
-    const wrapper = setup({ complete: true });
+  test('displays only Edit button when isComplete and isPersistent and not isEditing', () => {
+    const wrapper = setup({ isComplete: true });
 
     const buttons = wrapper.find(Button);
 
     expect(buttons).toHaveLength(1);
-    expect(buttons.at(0).prop('id')).toBe('test-edit-button');
+    expect(buttons.at(0).prop('data-test')).toBe('edit-button');
   });
 });
 
 describe('step overlay', () => {
-  test('overlay is hidden when incomplete', () => {
+  test('overlay display is "none" when incomplete', () => {
     const wrapper = setup();
 
-    const overlay = wrapper.find('#test-overlay');
+    const overlay = wrapper.find('[data-test="overlay"]').hostNodes();
 
-    expect(overlay.prop('display')).toBe(false);
+    expect(toJson(overlay)).toHaveStyleRule('display', 'none');
   });
 
-  test('overlay is displayed when complete and not editing', () => {
-    const wrapper = setup({ complete: true });
+  test('overlay display is "block" when isComplete and not isEditing', () => {
+    const wrapper = setup({ isComplete: true });
 
-    const overlay = wrapper.find('#test-overlay');
+    const overlay = wrapper.find('[data-test="overlay"]').hostNodes();
 
-    expect(overlay.prop('display')).toBe(true);
+    expect(toJson(overlay)).toHaveStyleRule('display', 'block');
   });
 
-  test('overlay is hidden when complete and editing', () => {
-    const wrapper = setup({ complete: true });
-    wrapper.setState({ editing: true });
+  test('overlay display is "none" when isComplete and isEditing', () => {
+    const wrapper = setup({ isComplete: true });
+    wrapper.setState({ isEditing: true });
 
-    const overlay = wrapper.find('#test-overlay');
+    const overlay = wrapper.find('[data-test="overlay"]').hostNodes();
 
-    expect(overlay.prop('display')).toBe(false);
+    expect(toJson(overlay)).toHaveStyleRule('display', 'none');
   });
 });
 
-
 describe('when a step is rendered', () => {
-  test('sets display to false when it receives the default values for active and complete', () => {
+  test('sets display to "none" when it receives the default values for isActive and isComplete', () => {
     const wrapper = setup();
 
-    const step = wrapper.find('#test');
-
-    expect(step.prop('display')).toBe(false);
+    const step = wrapper.find('[data-test="test"]').hostNodes();
+    expect(toJson(step)).toHaveStyleRule('visibility', 'hidden');
   });
 
-  test('sets display to true when active', () => {
-    const wrapper = setup({ active: true });
+  test('sets display to "block" when isActive', () => {
+    const wrapper = setup({ isActive: true });
 
-    const step = wrapper.find('#test');
+    const step = wrapper.find('[data-test="test"]').hostNodes();
 
-    expect(step.prop('display')).toBe(true);
+    expect(toJson(step)).toHaveStyleRule('visibility', 'visible');
   });
 
-  test('sets display to true when complete', () => {
-    const wrapper = setup({ complete: true });
+  test('sets display to "block" when isComplete', () => {
+    const wrapper = setup({ isComplete: true });
 
-    const step = wrapper.find('#test');
+    const step = wrapper.find('[data-test="test"]').hostNodes();
 
-    expect(step.prop('display')).toBe(true);
+    expect(toJson(step)).toHaveStyleRule('visibility', 'visible');
   });
 });
 
 function setup(props) {
   return mount(
-    <Step id="test" {...props}>
-      {({ stepId }) => <div id={`${stepId}-child`}>Hello</div>}
-    </Step>
+    <Step
+      id="test"
+      {...props}
+      render={({ stepId }) => <div id={`${stepId}-child`}>Hello</div>}
+    />
   );
 }
