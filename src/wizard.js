@@ -30,24 +30,18 @@ export default class Wizard extends Component {
     complete: false
   };
 
+  componentDidUpdate() {
+    if (this.state.completedSteps.length === React.Children.count(this.props.children)) {
+      this.props.completeWizard();
+    }
+  }
+
   updateModel = model => {
     this.setState(previousState =>
       Object.assign({}, previousState, {
         model: Object.assign({}, previousState.model, model)
       })
     );
-  };
-
-  completeWizard = step => {
-    return () => {
-      const stepId = step.props.id;
-      if (!this.state.completedSteps.includes(stepId)) {
-        this.setState(previousState => ({
-          completedSteps: [...previousState.completedSteps, stepId]
-        }));
-      }
-      this.props.completeWizard();
-    };
   };
 
   createCompleteStep = (step, onStepComplete) => {
@@ -79,14 +73,11 @@ export default class Wizard extends Component {
                 const isActive = stepIdentifier === activeStep.props.id;
                 const { completedSteps } = this.state;
                 const isComplete = completedSteps.includes(stepIdentifier);
-                const completeStep =
-                  nextStep !== undefined
-                    ? this.createCompleteStep(step, activateNextStep)
-                    : this.completeWizard(step);
+                const completeStep = this.createCompleteStep(step, nextStep !== undefined ? activateNextStep : noop);
                 const stepProps = {
                   key: stepIdentifier,
                   isActive,
-                  model,
+                  wizardModel: model,
                   isComplete,
                   completeStep,
                   updateModel: this.updateModel

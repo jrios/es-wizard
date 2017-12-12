@@ -34,7 +34,7 @@ const WizardButton = styled(Button)`margin-left: 20px;`;
 export class Step extends Component {
   static propTypes = {
     id: PropTypes.string.isRequired,
-    model: PropTypes.object,
+    wizardModel: PropTypes.object,
     modelSelector: PropTypes.func,
     isPersistent: PropTypes.bool,
     isActive: PropTypes.bool,
@@ -50,7 +50,7 @@ export class Step extends Component {
     isActive: false,
     isComplete: false,
     completeStep: noop,
-    model: {},
+    wizardModel: {},
     modelSelector: noop,
     updateModel: noop,
     persist: noop,
@@ -58,7 +58,8 @@ export class Step extends Component {
   };
 
   state = {
-    isEditing: false
+    isEditing: false,
+    model: this.props.modelSelector(this.props.wizardModel)
   };
 
   componentDidMount() {
@@ -104,7 +105,7 @@ export class Step extends Component {
 
   getSaveAndNextButtonProps = () => {
     function save() {
-      this.props.persist(this.props.model)
+      this.props.persist(this.state.model)
         .then(() => {
           this.state.isEditing ? this.saveEditedStep() : this.props.completeStep();
         }).catch(reason => {
@@ -162,19 +163,19 @@ export class Step extends Component {
   };
 
   updateModel = updater => {
-    this.props.updateModel(updater(this.props.model));
+    this.props.updateModel(updater(this.props.wizardModel));
   };
 
   render() {
     const { id, isActive, isComplete, render } = this.props;
-    const { isEditing } = this.state;
+    const { isEditing, model } = this.state;
     const displayStep = isActive || isComplete;
     const displayOverlay = isComplete && !isEditing;
 
     const childProps = {
       stepId: id,
       disabled: displayOverlay,
-      model: this.props.modelSelector(this.props.model),
+      stepModel: model,
       update: this.updateModel
     };
 
