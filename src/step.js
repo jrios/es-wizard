@@ -58,8 +58,7 @@ export class Step extends Component {
   };
 
   state = {
-    isEditing: false,
-    model: this.props.modelSelector(this.props.wizardModel)
+    isEditing: false
   };
 
   componentDidMount() {
@@ -105,7 +104,8 @@ export class Step extends Component {
 
   getSaveAndNextButtonProps = () => {
     function save() {
-      this.props.persist(this.state.model)
+      const modelToPersist = this.props.modelSelector(this.props.wizardModel);
+      this.props.persist(modelToPersist)
         .then(() => {
           this.state.isEditing ? this.saveEditedStep() : this.props.completeStep();
         }).catch(reason => {
@@ -168,14 +168,14 @@ export class Step extends Component {
 
   render() {
     const { id, isActive, isComplete, render } = this.props;
-    const { isEditing, model } = this.state;
+    const { isEditing } = this.state;
     const displayStep = isActive || isComplete;
     const displayOverlay = isComplete && !isEditing;
 
     const childProps = {
       stepId: id,
       disabled: displayOverlay,
-      stepModel: model,
+      stepModel: this.props.modelSelector(this.props.wizardModel),
       update: this.updateModel
     };
 

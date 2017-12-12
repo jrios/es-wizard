@@ -54,8 +54,7 @@ function MyApp() {
               <input 
                 id={name}
                 onChange={event => update(wizardModel => {
-                  wizardModel.stepTwo.name = event.target.value;
-                  return stepModel;
+                  return Object.assign(wizardModel, { stepTwo: { ...wizardModel.stepTwo, name: event.target.value }});
                 })}
                 defaultValue={stepModel.name} type="text" 
               />
@@ -65,7 +64,7 @@ function MyApp() {
           );
         }} 
       />
-        <Wizard.Step
+      <Wizard.Step
         id="step3"
         isPersistent={false}
         modelSelector={wizardModel => wizardModel.stepTwo}
