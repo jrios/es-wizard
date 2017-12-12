@@ -1,6 +1,6 @@
 {
   "name": "es-wizard",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Wizard component that walks users through a step-based workflow",
   "main": "dist/umd/index.js",
   "scripts": {
