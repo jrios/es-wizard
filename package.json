@@ -29,6 +29,7 @@
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.1",
     "enzyme-to-json": "^3.1.0",
+    "es-components": "^7.2.0",
     "es-scripts": "^0.2.0",
     "jest": "^21.1.0",
     "jest-styled-components": "^4.7.0",
@@ -43,7 +44,6 @@
     "setupTestFrameworkScriptFile": "./src/test-setup.js"
   },
   "dependencies": {
-    "es-components": "^4.2.0",
     "lodash.noop": "^3.0.1",
     "react": "^16.0.0",
     "react-advancer": "^1.0.0",
